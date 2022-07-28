@@ -1,0 +1,10 @@
+block:
+  version: 1.x
+  css:
+    component:
+      css/feed.css: {}
+  js:
+    js/feed.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings

@@ -1,0 +1,8 @@
+<?php
+function json_event_feed_theme() {
+  return [
+    'json_event_feed_block_theme' => [
+      'variables' => [],
+    ],
+  ];
+}

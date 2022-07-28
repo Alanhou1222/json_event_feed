@@ -1,0 +1,7 @@
+name: Json Event Feed
+description: A module that provide a custom block that reads json file from url and display events.
+package: Custom
+type: module
+version: 1.0
+core: 8.x
+core_version_requirement: ^8 || ^9
