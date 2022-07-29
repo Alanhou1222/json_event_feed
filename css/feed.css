@@ -17,10 +17,11 @@
   font-weight: bold;
   line-height: 125%;
   text-decoration: none;
-  cursor:pointer;
 }
 .happening-feed a:hover {
   text-decoration: underline;
+  color: var(--maize);
+  cursor:pointer;
 }
 
 /*loader*/

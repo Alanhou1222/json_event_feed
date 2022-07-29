@@ -21,8 +21,8 @@ $(function() { // Document ready function
 
   //Params
   let params = {
-    'elementWidth': 300,
-    'elementPerPage': 7,
+    'elementWidth': 0,
+    'elementPerPage': 0,
   }
 
   //Fields
@@ -47,14 +47,7 @@ $(function() { // Document ready function
   let showEvents;
 
   //Event placeholder
-  let placeholder = {
-    'event_title': "See whats Happening @ Michigan",
-    'image_url': "https://events.umich.edu/images/default-events-module.png",
-    'permalink': "https://events.umich.edu/",
-    'date_start': "",
-    'building_name': "",
-    'links': [],
-  }
+  let placeholder = {}
 
   //advance search
   let tagSet = new Set();
@@ -92,8 +85,12 @@ $(function() { // Document ready function
       config.popup = Boolean(drupalSettings.field.popup);
       config.search = Boolean(drupalSettings.field.search);
       config.wide = Boolean(drupalSettings.field.wide);
-      params.elementWidth = drupalSettings.field.elementWidth;
-      params.elementPerPage = drupalSettings.field.elementPerPage;
+      params.elementWidth = parseInt(drupalSettings.field.elementWidth);
+      params.elementPerPage = parseInt(drupalSettings.field.elementPerPage);
+      placeholder[fields.title] = drupalSettings.field.placeholderTitle;
+      placeholder[fields.image_url] = drupalSettings.field.placeholderImage;
+      placeholder[fields.page_link] = drupalSettings.field.placeholderUrl;
+      placeholder[fields.links] = [];
 
       if(config.wide){
           state.wide = "-wide";

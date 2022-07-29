@@ -4,6 +4,8 @@ namespace Drupal\json_event_feed\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\file\Entity\File;
+
 
 /**
  * Provides a 'Json Event Feed' Block.
@@ -49,6 +51,19 @@ class JsonEventFeedBlock extends BlockBase {
     $final_array['#attached']['drupalSettings']['field']['elementPerPage'] = $config['elementPerPage'];
     $final_array['#attached']['drupalSettings']['field']['linkToEventsListingPage'] = $config['linkToEventsListingPage'];
     $final_array['#attached']['drupalSettings']['field']['linkToEventsListingPageText'] = $config['linkToEventsListingPageText'];
+    $image = $this->configuration['placeholderImage'];
+    if (!empty($image[0])) {
+      if ($file = File::load($image[0])) {
+        $build['placeholderImage'] = [
+          '#theme' => 'image_style',
+          '#style_name' => 'medium',
+        ];
+      }
+    }
+    $final_array['#attached']['drupalSettings']['field']['placeholderTitle'] = $config['placeholderTitle'];
+    $final_array['#attached']['drupalSettings']['field']['placeholderImage'] = $file->createFileUrl();
+    $final_array['#attached']['drupalSettings']['field']['placeholderUrl'] = $config['placeholderUrl'];
+
     return $final_array;
   }
   /**
@@ -195,6 +210,26 @@ class JsonEventFeedBlock extends BlockBase {
       '#default_value' => $config['linkToEventsListingPageText'] ?? '',
     ];
 
+    $form['placeholderTitle'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('title for placeholder'),
+      '#default_value' => $config['placeholderTitle'] ?? '',
+    ];
+
+    $form['placeholderImage'] = [
+      '#type' => 'managed_file',
+      '#title' => $this->t('image for placeholder'),
+      '#name' => 'placeholderImage',
+      '#default_value' => $config['placeholderImage'],
+      '#upload_location' => 'public://placeholderImage',
+    ];
+
+    $form['placeholderUrl'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('url for placeholder'),
+      '#default_value' => $config['placeholderUrl'] ?? '',
+    ];
+
     $form['popup'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('popup'),
@@ -266,6 +301,18 @@ class JsonEventFeedBlock extends BlockBase {
     $this->configuration['elementPerPage'] = $values['elementPerPage'];
     $this->configuration['linkToEventsListingPage'] = $values['linkToEventsListingPage'];
     $this->configuration['linkToEventsListingPageText'] = $values['linkToEventsListingPageText'];
+    // Save image as permanent.
+    $image = $values['placeholderImage'];
+    if ($image != $this->configuration['image']) {
+      if (!empty($image[0])) {
+        $file = File::load($image[0]);
+        $file->setPermanent();
+        $file->save();
+      }
+    }
+    $this->configuration['placeholderTitle'] = $values['placeholderTitle'];
+    $this->configuration['placeholderImage'] = $values['placeholderImage'];
+    $this->configuration['placeholderUrl'] = $values['placeholderUrl'];
   }
   
   /**
