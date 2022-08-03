@@ -35,6 +35,7 @@ class JsonEventFeedBlock extends BlockBase {
     $final_array['#attached']['drupalSettings']['field']['title'] = $config['fields'][$config['title']];
     $final_array['#attached']['drupalSettings']['field']['subtitle'] = $config['fields'][$config['subtitle']];
     $final_array['#attached']['drupalSettings']['field']['image_url'] = $config['fields'][$config['image_url']];
+    $final_array['#attached']['drupalSettings']['field']['default_image'] = $config['default_image'];
     $final_array['#attached']['drupalSettings']['field']['date'] = $config['fields'][$config['date']];
     $final_array['#attached']['drupalSettings']['field']['time_start'] = $config['fields'][$config['time_start']];
     $final_array['#attached']['drupalSettings']['field']['time_end'] = $config['fields'][$config['time_end']];
@@ -47,22 +48,23 @@ class JsonEventFeedBlock extends BlockBase {
     $final_array['#attached']['drupalSettings']['field']['popup'] = $config['popup'];
     $final_array['#attached']['drupalSettings']['field']['search'] = $config['search'];
     $final_array['#attached']['drupalSettings']['field']['wide'] = $config['wide'];
-    $final_array['#attached']['drupalSettings']['field']['elementWidth'] = $config['elementWidth'];
-    $final_array['#attached']['drupalSettings']['field']['elementPerPage'] = $config['elementPerPage'];
-    $final_array['#attached']['drupalSettings']['field']['linkToEventsListingPage'] = $config['linkToEventsListingPage'];
-    $final_array['#attached']['drupalSettings']['field']['linkToEventsListingPageText'] = $config['linkToEventsListingPageText'];
-    $image = $this->configuration['placeholderImage'];
+    $final_array['#attached']['drupalSettings']['field']['element_width'] = $config['element_width'];
+    $final_array['#attached']['drupalSettings']['field']['element_per_page'] = $config['element_per_page'];
+    $final_array['#attached']['drupalSettings']['field']['link_to_events_listing_page'] = $config['link_to_events_listing_page'];
+    $final_array['#attached']['drupalSettings']['field']['link_to_events_listing_page_text'] = $config['link_to_events_listing_page_text'];
+    $final_array['#attached']['drupalSettings']['field']['popup_link_text'] = $config['popup_link_text'];
+    $image = $this->configuration['placeholder_image'];
     if (!empty($image[0])) {
       if ($file = File::load($image[0])) {
-        $build['placeholderImage'] = [
+        $build['placeholder_image'] = [
           '#theme' => 'image_style',
           '#style_name' => 'medium',
         ];
       }
+      $final_array['#attached']['drupalSettings']['field']['placeholder_image'] = $file->createFileUrl();
     }
-    $final_array['#attached']['drupalSettings']['field']['placeholderTitle'] = $config['placeholderTitle'];
-    $final_array['#attached']['drupalSettings']['field']['placeholderImage'] = $file->createFileUrl();
-    $final_array['#attached']['drupalSettings']['field']['placeholderUrl'] = $config['placeholderUrl'];
+    $final_array['#attached']['drupalSettings']['field']['placeholder_title'] = $config['placeholder_title'];
+    $final_array['#attached']['drupalSettings']['field']['placeholder_url'] = $config['placeholder_url'];
 
     return $final_array;
   }
@@ -124,6 +126,13 @@ class JsonEventFeedBlock extends BlockBase {
       '#description' => $this->t('key of event image url'),
       '#options' => $config['fields'],
       '#default_value' => $config['image_url'] ?? 0,
+    ];
+
+    $form['default_image'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('default image'),
+      '#description' => $this->t('default image if url not provided'),
+      '#default_value' => $config['default_image'] ?? '',
     ];
 
     $form['date'] = [
@@ -198,36 +207,36 @@ class JsonEventFeedBlock extends BlockBase {
       '#default_value' => $config['tags'] ?? 0,
     ];
 
-    $form['linkToEventsListingPage'] = [
+    $form['link_to_events_listing_page'] = [
       '#type' => 'textfield',
       '#title' => $this->t('link to events listing page'),
-      '#default_value' => $config['linkToEventsListingPage'] ?? '',
+      '#default_value' => $config['link_to_events_listing_page'] ?? '',
     ];
 
-    $form['linkToEventsListingPageText'] = [
+    $form['link_to_events_listing_page_text'] = [
       '#type' => 'textfield',
       '#title' => $this->t('text for link to events listing page'),
-      '#default_value' => $config['linkToEventsListingPageText'] ?? '',
+      '#default_value' => $config['link_to_events_listing_page_text'] ?? '',
     ];
 
-    $form['placeholderTitle'] = [
+    $form['placeholder_title'] = [
       '#type' => 'textfield',
       '#title' => $this->t('title for placeholder'),
-      '#default_value' => $config['placeholderTitle'] ?? '',
+      '#default_value' => $config['placeholder_title'] ?? '',
     ];
 
-    $form['placeholderImage'] = [
+    $form['placeholder_image'] = [
       '#type' => 'managed_file',
       '#title' => $this->t('image for placeholder'),
-      '#name' => 'placeholderImage',
-      '#default_value' => $config['placeholderImage'],
-      '#upload_location' => 'public://placeholderImage',
+      '#name' => 'placeholder_image',
+      '#default_value' => $config['placeholder_image'],
+      '#upload_location' => 'public://placeholder_image',
     ];
 
-    $form['placeholderUrl'] = [
+    $form['placeholder_url'] = [
       '#type' => 'textfield',
       '#title' => $this->t('url for placeholder'),
-      '#default_value' => $config['placeholderUrl'] ?? '',
+      '#default_value' => $config['placeholder_url'] ?? '',
     ];
 
     $form['popup'] = [
@@ -248,24 +257,31 @@ class JsonEventFeedBlock extends BlockBase {
       '#default_value' => $config['wide'] ?? 0,
     ];
 
-    $form['elementWidth'] = [
+    $form['popup_link_text'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('popup link text'),
+      '#description' => $this->t('text for event link on popup'),
+      '#default_value' => $config['popup_link_text'] ?? '',
+    ];
+
+    $form['element_width'] = [
       '#type' => 'textfield',
       '#title' => $this->t('element width'),
       '#description' => $this->t('wide view will multiply field value by 1.6 automatically'),
       '#attribute' => [
         '#type' => 'number',
       ],
-      '#default_value' => $config['elementWidth'] ?? 300,
+      '#default_value' => $config['element_width'] ?? 300,
     ];
 
-    $form['elementPerPage'] = [
+    $form['element_per_page'] = [
       '#type' => 'textfield',
       '#title' => $this->t('element per page'),
       '#description' => $this->t('event element per page'),
       '#attribute' => [
         '#type' => 'number',
       ],
-      '#default_value' => $config['elementPerPage'] ?? 7,
+      '#default_value' => $config['element_per_page'] ?? 7,
     ];
 
     return $form;
@@ -285,6 +301,7 @@ class JsonEventFeedBlock extends BlockBase {
     $this->configuration['title'] = $values['title'];
     $this->configuration['subtitle'] = $values['subtitle'];
     $this->configuration['image_url'] = $values['image_url'];
+    $this->configuration['default_image'] = $values['default_image'];
     $this->configuration['date'] = $values['date'];
     $this->configuration['time_start'] = $values['time_start'];
     $this->configuration['time_end'] = $values['time_end'];
@@ -297,12 +314,13 @@ class JsonEventFeedBlock extends BlockBase {
     $this->configuration['popup'] = $values['popup'];
     $this->configuration['search'] = $values['search'];
     $this->configuration['wide'] = $values['wide'];
-    $this->configuration['elementWidth'] = $values['elementWidth'];
-    $this->configuration['elementPerPage'] = $values['elementPerPage'];
-    $this->configuration['linkToEventsListingPage'] = $values['linkToEventsListingPage'];
-    $this->configuration['linkToEventsListingPageText'] = $values['linkToEventsListingPageText'];
+    $this->configuration['element_width'] = $values['element_width'];
+    $this->configuration['element_per_page'] = $values['element_per_page'];
+    $this->configuration['link_to_events_listing_page'] = $values['link_to_events_listing_page'];
+    $this->configuration['link_to_events_listing_page_text'] = $values['link_to_events_listing_page_text'];
+    $this->configuration['popup_link_text'] = $values['popup_link_text'];
     // Save image as permanent.
-    $image = $values['placeholderImage'];
+    $image = $values['placeholder_image'];
     if ($image != $this->configuration['image']) {
       if (!empty($image[0])) {
         $file = File::load($image[0]);
@@ -310,9 +328,9 @@ class JsonEventFeedBlock extends BlockBase {
         $file->save();
       }
     }
-    $this->configuration['placeholderTitle'] = $values['placeholderTitle'];
-    $this->configuration['placeholderImage'] = $values['placeholderImage'];
-    $this->configuration['placeholderUrl'] = $values['placeholderUrl'];
+    $this->configuration['placeholder_title'] = $values['placeholder_title'];
+    $this->configuration['placeholder_image'] = $values['placeholder_image'];
+    $this->configuration['placeholder_url'] = $values['placeholder_url'];
   }
   
   /**

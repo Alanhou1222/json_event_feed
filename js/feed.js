@@ -39,6 +39,7 @@ $(function() { // Document ready function
     'page_link': '',
     'type': '',
     'tags': '',
+    'popupLinkText': '',
   }
 
   //Events data
@@ -55,7 +56,7 @@ $(function() { // Document ready function
 
   //Display the loader before getting the json data
   let loaderHtml = '<div class = "loader-container feed-container center"><div class="loader"></div></div>';
-  $('#happening-feed').append(loaderHtml);
+  $('#json-event-feed').append(loaderHtml);
   
   //advance search animation
   let animateTime = 500;
@@ -65,13 +66,14 @@ $(function() { // Document ready function
     success: function(data) { // Run this if there is a successful call
       let searchHtml;
       let eventFeedHtml;
-      let linkToEventsListingPage = drupalSettings.field.linkToEventsListingPage;
-      let linkToEventsListingPageText = drupalSettings.field.linkToEventsListingPageText;
+      let linkToEventsListingPage = drupalSettings.field.link_to_events_listing_page;
+      let linkToEventsListingPageText = drupalSettings.field.link_to_events_listing_page_text;
       let linkToEventsListingPageHtml;
       let paginationHtml;
       fields.title = drupalSettings.field.title,
       fields.subtitle = drupalSettings.field.subtitle,
       fields.image_url = drupalSettings.field.image_url,
+      fields.default_image = drupalSettings.field.default_image,
       fields.date = drupalSettings.field.date,
       fields.time_start = drupalSettings.field.time_start,
       fields.time_end = drupalSettings.field.time_end,
@@ -81,15 +83,16 @@ $(function() { // Document ready function
       fields.page_link = drupalSettings.field.page_link,
       fields.type = drupalSettings.field.type,
       fields.tags = drupalSettings.field.tags,
-      $('#happening-feed').empty();
+      fields.popupLinkText = drupalSettings.field.popup_link_text,
+      $('#json-event-feed').empty();
       config.popup = Boolean(drupalSettings.field.popup);
       config.search = Boolean(drupalSettings.field.search);
       config.wide = Boolean(drupalSettings.field.wide);
-      params.elementWidth = parseInt(drupalSettings.field.elementWidth);
-      params.elementPerPage = parseInt(drupalSettings.field.elementPerPage);
-      placeholder[fields.title] = drupalSettings.field.placeholderTitle;
-      placeholder[fields.image_url] = drupalSettings.field.placeholderImage;
-      placeholder[fields.page_link] = drupalSettings.field.placeholderUrl;
+      params.elementWidth = parseInt(drupalSettings.field.element_width);
+      params.elementPerPage = parseInt(drupalSettings.field.element_per_page);
+      placeholder[fields.title] = drupalSettings.field.placeholder_title;
+      placeholder[fields.image_url] = drupalSettings.field.placeholder_image;
+      placeholder[fields.page_link] = drupalSettings.field.placeholder_url;
       placeholder[fields.links] = [];
 
       if(config.wide){
@@ -99,7 +102,7 @@ $(function() { // Document ready function
       if(config.search){
         searchHtml = '<div class = "feed-search feed-container center"><div id = "search-content" class = "search-content"><h3>Search Events</h3>'
         searchHtml += '<input id= "search-input" class = "search-input" placeholder="Search.."></input><div class = "advance-search-toggle-container"><a id = "advance-search-toggle">advance search</a><div>';
-        $('#happening-feed').append(searchHtml);
+        $('#json-event-feed').append(searchHtml);
         $("#search-input").on("keyup", function() {
           search();
         });
@@ -113,15 +116,15 @@ $(function() { // Document ready function
         });
       }
       eventFeedHtml = '<div id = "event-feed"></div>';
-      $('#happening-feed').append(eventFeedHtml);
+      $('#json-event-feed').append(eventFeedHtml);
       linkToEventsListingPage = url.replace("/json", "");
-      linkToEventsListingPageHtml = '<div class = "feed-container center link-to-happening"><a href = "'+ linkToEventsListingPage+ '">'+linkToEventsListingPageText+'</a></div>'
-      $('#happening-feed').append(linkToEventsListingPageHtml);
+      linkToEventsListingPageHtml = '<div class = "feed-container center link-to-event-page"><a href = "'+ linkToEventsListingPage+ '">'+linkToEventsListingPageText+'</a></div>'
+      $('#json-event-feed').append(linkToEventsListingPageHtml);
       paginationHtml = '<div class = "feed-container center"><div id="pagination-wrapper"></div></div>';
-      $('#happening-feed').append(paginationHtml);
+      $('#json-event-feed').append(paginationHtml);
       if(config.popup){
         let modalHtml = '<div id="feed-modal" class="feed-modal"><div class="feed-modal-content"><div id = "feed-modal-header" class="feed-modal-header"><span id = "feed-modal-close" class="feed-modal-close">&times;</span></div><div id = "feed-modal-body" class="feed-modal-body feed-modal-row"></div></div></div>';
-        $('#happening-feed').append(modalHtml);
+        $('#json-event-feed').append(modalHtml);
         // When the user clicks on <span> (x), close the modal
         $('#feed-modal-close').on('click', function(){
           $('#feed-modal').hide();
@@ -138,7 +141,7 @@ $(function() { // Document ready function
   });
 
   $(window).resize(function() {
-    state.feedSize = $('#happening-feed').width();
+    state.feedSize = $('#json-event-feed').width();
     if(state.elementPerRow != Math.floor(state.feedSize/params["elementWidth"])){
       state.elementPerRow = Math.floor(state.feedSize/params["elementWidth"])>=1 ? Math.floor(state.feedSize/params["elementWidth"]): 1;
       pagination();
@@ -173,7 +176,7 @@ $(function() { // Document ready function
       else{
         html = buildEvent(showEvents[i],i); // build html for object
       }
-      $('.event-row').last().append(html); // append each object to the <div id="happening-feed"></div>
+      $('.event-row').last().append(html); // append each object to the <div id="json-event-feed"></div>
     }
 
     if(state.count == 0){
@@ -182,6 +185,11 @@ $(function() { // Document ready function
     }
       
     if(config.popup){
+      $(".image-link").click(function() {
+        $('#feed-modal').show();
+        state.currentEvent = $(this).attr("value");
+        buildModal(showEvents[state.currentEvent]);
+      });
       $(".event-modal-button").click(function() {
         $('#feed-modal').show();
         state.currentEvent = $(this).val();
@@ -239,8 +247,15 @@ $(function() { // Document ready function
   // create html for object.
   function buildEvent(obj,count) {
     let html = '<div class="event'+state.wide+'" style="flex:0 0 '+(100/state.elementPerRow)+'%">';
-    let image_url = (obj[fields.image_url]) ? obj[fields.image_url]: "https://events.umich.edu/images/default190@2x.png";
-    let image = '<a class = "image-link" href ='+obj[fields.page_link]+'><div class = "event-image'+state.wide+'" style="background-image: url('+image_url+')"></div></a>';
+    let image_url = (obj[fields.image_url]) ? obj[fields.image_url]: fields.default_image;
+    let image;
+    if(config.popup){
+      image = '<a class = "image-link" value = "'+count+'"><div class = "event-image'+state.wide+'" style="background-image: url('+image_url+')"></div></a>';
+    }
+    else{
+      image = '<a class = "image-link" href ='+obj[fields.page_link]+'><div class = "event-image'+state.wide+'" style="background-image: url('+image_url+')"></div></a>';
+    }
+    
     let title = obj[fields.title];
     let date = obj[fields.date];
     let links = obj[fields.links];
@@ -276,7 +291,7 @@ $(function() { // Document ready function
 
   function buildModal(obj){
     let titles = '<h2>'+obj[fields.title]+'</h2>';
-    let image_url = (obj[fields.image_url]) ? obj[fields.image_url]: "https://events.umich.edu/images/default190@2x.png";
+    let image_url = (obj[fields.image_url]) ? obj[fields.image_url]: fields.default_image;
     let html = '<div class = "feed-modal-side">';
     let hours;
     let minutes;
@@ -313,7 +328,7 @@ $(function() { // Document ready function
     html += '</ul></div>';
     if($( window ).width() <= 800) html += buildModalLinks(obj);
     $('#feed-modal-body').append(html);
-    $('#feed-modal-body').after('<a id = "feed-modal-event-link" href ='+obj[fields.page_link]+'>View on Happening @ Michigan'+'</a>');
+    $('#feed-modal-body').after('<a id = "feed-modal-event-link" href ='+obj[fields.page_link]+'>'+fields.popupLinkText+'</a>');
   };
 
   function buildModalLinks(obj){
@@ -340,10 +355,17 @@ $(function() { // Document ready function
       let value = $("#search-input").val().toLowerCase();
       let eventSet = new Set();
       let count = 0;
-      showEvents = filteredEvents.filter(obj => obj[fields.type].toLowerCase().includes(value));
+      if (fields.type != 'N/A'){
+        showEvents = filteredEvents.filter(obj => obj[fields.type].toLowerCase().includes(value));
+      }
+      else{
+        showEvents = [];
+      }
       for(let i = count; i < Object.keys(showEvents).length; i++) eventSet.add(showEvents[i][fields.title]);
       count = Object.keys(showEvents).length;
-      showEvents = showEvents.concat(filteredEvents.filter(obj => obj[fields.tags].find(element => element.toLowerCase().includes(value))&& !eventSet.has(obj[fields.title])));
+      if (fields.tags != 'N/A'){
+        showEvents = showEvents.concat(filteredEvents.filter(obj => obj[fields.tags].find(element => element.toLowerCase().includes(value))&& !eventSet.has(obj[fields.title])));
+      }
       for(let i = count; i < Object.keys(showEvents).length; i++) eventSet.add(showEvents[i][fields.title]);
       count = Object.keys(showEvents).length;
       showEvents = showEvents.concat(filteredEvents.filter(obj => (obj[fields.title].toLowerCase().includes(value)|| obj[fields.location].toLowerCase().includes(value) || obj[fields.description].toLowerCase().includes(value)) && !eventSet.has(obj[fields.title])));
@@ -356,29 +378,53 @@ $(function() { // Document ready function
     let advanceSearchHtml = '<div id = "advance-search" class = "advance-search"><div class = "container-fluid"><div class = "row">';
     for(let i = 0; i < events.length; i ++){
       for(let j = 0; j < events[i].tags.length; j++){
-        tagSet.add(events[i][fields.tags][j]);
+        if (fields.tags != 'N/A'){
+          tagSet.add(events[i][fields.tags][j]);
+        }
       }
-      typeSet.add(events[i][fields.type]);
+      if (fields.type != 'N/A'){
+        typeSet.add(events[i][fields.type]);
+      }
+      
     }
     advanceSearchHtml += '<div class = "col-sm-6 search-container"><label for = "search-start-date">Start Date: </label><br><input type = "date" id = "search-start-date" class = "search-date"></div>';
     advanceSearchHtml += '<div class = "col-sm-6 search-container"><label for = "search-end-date">End Date: </label><br><input type = "date" id = "search-end-date" class = "search-date"></div>';
     advanceSearchHtml += '</div>';
-    advanceSearchHtml += '<div class = "row type-row"><div class = "col-sm-6 search-container">';
-    advanceSearchHtml += '<label for = "type-checkbox">Event types:</label><br>';
-    advanceSearchHtml += '<div class = "search-checkbox-container">';
-    typeSet.forEach(element => {
-      advanceSearchHtml += '<input type="checkbox" class = "type-checkbox" value ="'+element+'"><label for="'+element+'"> '+element+'</label><br>';
-    });
-    advanceSearchHtml += '</div></div>';
-    advanceSearchHtml += '<div class = "col-sm-6 search-container">';
-    advanceSearchHtml += '<label for = "tag-checkbox">Event tags:&nbsp</label><input id = "tag-search-input" class = "tag-search-input" type="text" placeholder="Search Tags.."></input><br>';
-    advanceSearchHtml += '<div class = "search-checkbox-container">';
-    tagSet.forEach(element => {
-      advanceSearchHtml += '<div><input type="checkbox" class = "tag-checkbox" value ="'+element+'"><label for="'+element+'" class = "tag-label"> '+element+'</label></div>';
-    });
-    advanceSearchHtml += '</div></div></div>';
+    if(fields.type != 'N/A'){
+      if(fields.tags != 'N/A'){
+        advanceSearchHtml += '<div class = "row type-row"><div class = "col-sm-6 search-container">';
+      }
+      else{
+        advanceSearchHtml += '<div class = "row type-row"><div class = "col-sm-12 search-container">';
+      }
+      advanceSearchHtml += '<label for = "type-checkbox">Event types:&nbsp</label><input id = "type-search-input" class = "tag-type-search-input" placeholder="Search Types.."></input><br>';
+      advanceSearchHtml += '<div class = "search-checkbox-container">';
+      typeSet.forEach(element => {
+        advanceSearchHtml += '<div><input type="checkbox" class = "type-checkbox" value ="'+element+'"><label for="'+element+'" class = "type-label"> '+element+'</label></div>';
+      });
+      advanceSearchHtml += '</div></div>';
+    }
+    if(fields.tags != 'N/A'){
+      if(fields.type != 'N/A'){
+        advanceSearchHtml += '<div class = "col-sm-6 search-container">';
+      }
+      else{
+        advanceSearchHtml += '<div class = "col-sm-12 search-container">';
+      }
+      advanceSearchHtml += '<label for = "tag-checkbox">Event tags:&nbsp</label><input id = "tag-search-input" class = "tag-type-search-input" placeholder="Search Tags.."></input><br>';
+      advanceSearchHtml += '<div class = "search-checkbox-container">';
+      tagSet.forEach(element => {
+        advanceSearchHtml += '<div><input type="checkbox" class = "tag-checkbox" value ="'+element+'"><label for="'+element+'" class = "tag-label"> '+element+'</label></div>';
+      });
+      advanceSearchHtml += '</div></div>';
+    }
+    
+    advanceSearchHtml += '</div>';
     advanceSearchHtml += '<div class = "advance-search-button-container"><button id = "search-clear" class = "search-clear">Clear Search</button><button id = "advance-search-submit" class = "advance-search-submit">Submit</button></div></div>';
     $('#search-content').append(advanceSearchHtml);
+    $("#type-search-input").on("keyup", function() {
+      typeSearch();
+    });
     $("#tag-search-input").on("keyup", function() {
       tagSearch();
     });
@@ -431,12 +477,23 @@ $(function() { // Document ready function
     });
   };
 
+  function typeSearch(){
+    let value = $("#type-search-input").val().toLowerCase();
+    $('.type-checkbox').filter(function() {
+      $(this).toggle($(this).val().toLowerCase().indexOf(value) > -1);
+    });
+    $('.type-label').filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+    });
+  };
+
   function clearSearch(){
     $('#search-start-date').val("");
     $('#search-end-date').val("");
     $('input:checkbox').each(function(){
       $(this).prop("checked", false);
     });
+    $('#type-search-input').val("");
     $('#tag-search-input').val("");
     $("#search-input").val("");
     filteredEvents = events;

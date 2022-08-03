@@ -9,16 +9,16 @@
 }
 
 /*The entire feed*/
-.happening-feed {
+.json-event-feed {
   width: 100%;
 }
-.happening-feed a {
+.json-event-feed a {
   color: var(--maize);
   font-weight: bold;
   line-height: 125%;
   text-decoration: none;
 }
-.happening-feed a:hover {
+.json-event-feed a:hover {
   text-decoration: underline;
   color: var(--maize);
   cursor:pointer;
@@ -130,10 +130,6 @@
   text-align: left;
 }
 
-.event-title h3{
-  color: var(--maize);
-}
-
 .event-title h3:hover {
   text-decoration: underline;
   cursor: pointer;
@@ -161,6 +157,7 @@
   margin: 5px 0;
   font-size: 14px;
   line-height: 125%;
+  color: var(--maize);
 }
 .event h3 a, .event-wide h3 a { font-size: 14px; }
 .event-modal-button{
@@ -175,15 +172,15 @@
 }
 .event-modal-button:hover { text-decoration: underline; }
 
-/*The link to Happening @ Michigan at the end of the feed*/
-.link-to-happening{
+/*The link to Event Page at the end of the feed*/
+.link-to-event-page{
   border: #fff solid 5px;
   background: var(--gray);
   padding: 10px;
   margin-bottom: 5px;
 }
 
-.link-to-happening a { font-size: 14px; }
+.link-to-event-page a { font-size: 14px; }
 
 /*Pagination Settings Start*/
 .page-button{
@@ -369,8 +366,9 @@
   padding: 5px;
   border-radius: 4px;
 }
-.tag-search-input {
-  height: 16px;
+.tag-type-search-input {
+  width: 100%;
+  height: 24px;
   box-sizing:border-box;
   border: 1px solid black;
   border-radius: 2px;
@@ -387,6 +385,7 @@
   background-color: #fff;
   border: 1px solid #ccc;
   padding: 5px;
+  margin-right: 5px;
   transition-duration: 0.4s;
   cursor: pointer;
 }
